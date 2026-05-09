@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>亞澤老師 LINE 貼圖集</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    header {
+      background: #06c755;
+      color: #fff;
+      padding: 32px 24px;
+      text-align: center;
+    }
+
+    header h1 { font-size: 1.8rem; font-weight: 700; }
+    header p  { margin-top: 6px; opacity: 0.85; font-size: 0.95rem; }
+
+    main {
+      max-width: 960px;
+      margin: 36px auto;
+      padding: 0 20px;
+    }
+
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 24px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+      transition: transform .2s, box-shadow .2s;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 18px rgba(0,0,0,.13);
+    }
+
+    .card img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      background: #eee;
+      display: block;
+    }
+
+    .card-body {
+      padding: 14px 16px;
+    }
+
+    .card-body h2 {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .card-body span {
+      font-size: 0.8rem;
+      color: #888;
+      margin-top: 4px;
+      display: block;
+    }
+
+    #status {
+      text-align: center;
+      color: #888;
+      padding: 48px 0;
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>亞澤老師 LINE 貼圖集</h1>
+  <p>yazelin 的所有貼圖系列</p>
+</header>
+
+<main>
+  <div id="status">載入中…</div>
+  <div id="grid"></div>
+</main>
+
+<script>
+  const REPO = 'yazelin/line-sticker';
+  const API  = `https://api.github.com/repos/${REPO}/contents/`;
+  const RAW  = `https://raw.githubusercontent.com/${REPO}/main/`;
+
+  async function load() {
+    const status = document.getElementById('status');
+    const grid   = document.getElementById('grid');
+
+    try {
+      const res  = await fetch(API);
+      const items = await res.json();
+
+      const sets = items
+        .filter(i => i.type === 'dir' && /^\d+-.+/.test(i.name))
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      if (sets.length === 0) {
+        status.textContent = '尚無貼圖組';
+        return;
+      }
+
+      status.remove();
+
+      for (const set of sets) {
+        const label = set.name.replace(/^\d+-/, '').replace(/-/g, ' ');
+        const num   = set.name.match(/^(\d+)/)?.[1] ?? '';
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <img src="${RAW}${set.name}/preview.png" alt="${set.name}" loading="lazy"
+               onerror="this.style.background='#ddd';this.removeAttribute('src')" />
+          <div class="card-body">
+            <h2>${label}</h2>
+            <span>第 ${parseInt(num)} 組</span>
+          </div>
+        `;
+        grid.appendChild(card);
+      }
+    } catch (e) {
+      status.textContent = '載入失敗，請稍後再試。';
+    }
+  }
+
+  load();
+</script>
+
+</body>
+</html>
